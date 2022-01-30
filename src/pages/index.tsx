@@ -1,9 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useMutation, useQuery } from "@apollo/client";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { Modal, Pagination } from "react-bootstrap";
 import ReactDatePicker from "react-datepicker";
-import { BsSearch } from "react-icons/bs";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
@@ -25,9 +24,20 @@ const Index = () => {
   const [date, setDate] = useState(new Date());
   const [rentBook] = useMutation(RENT_BOOK);
 
+  const [search, setSearch] = useState("");
+  const [searchMode, setSearchMode] = useState(false);
+
+  const filter = ["leadership", "social", "computer", "science", "kids"];
+  const [genre, setGenre] = useState("");
+
   const Navigate = useNavigate();
   const { loading, data, refetch } = useQuery(GET_BOOKS, {
-    variables: { limit: limitPage, offset: offset },
+    variables: {
+      limit: limitPage,
+      offset: offset,
+      title: search,
+      genre: genre,
+    },
   });
   const { loading: loading_count, data: data_count } =
     useQuery(GET_BOOKS_COUNT);
@@ -69,39 +79,50 @@ const Index = () => {
     setDate(new Date());
   };
 
+  const handleFilter = (item: any) => {
+    setGenre(item);
+    setSearchMode(true);
+  };
+
   useEffect(() => {
     refetch();
   }, [offset, limitPage]);
 
   useEffect(() => {
     if (!loading_count) {
-      const totalPage = Math.ceil(
-        data_count.books_aggregate.aggregate.count / limitPage
-      );
+      let totalPage = 1;
+      if (searchMode) {
+        totalPage = Math.ceil(data.books.length / limitPage);
+      } else {
+        totalPage = Math.ceil(
+          data_count.books_aggregate.aggregate.count / limitPage
+        );
+      }
       const temp: number[] = [];
       for (let i = 1; i <= totalPage; i++) {
         temp.push(i);
       }
       setPage(temp);
     }
-  }, [data_count, limitPage, loading_count]);
+  }, [data_count, limitPage, loading_count, searchMode]);
 
   return (
     <div className="container my-3 my-md-5">
       <div id="banner" className="row justify-content-center pb-md-5">
         <div className="col-lg-4 pb-md-5">
           <h1 className="display-4">New & Tranding</h1>
-          <p className="my-3">Explorer new worlds from authors</p>
-          <form className="d-flex gap-2 col col-md-5 col-lg-9 mb-4">
+          <p className="my-3">Explorer new worlds from books</p>
+          <form className="d-flex gap-2 col col-md-5 col-lg-8 mb-4">
             <input
               className="form-control rounded-pill"
               type="search"
               placeholder="Search"
               aria-label="Search"
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                setSearch(e.target.value);
+                e.target.value ? setSearchMode(true) : setSearchMode(false);
+              }}
             />
-            <button className="btn" type="submit">
-              <BsSearch />
-            </button>
           </form>
         </div>
         <div className="col-lg-4" />
@@ -109,6 +130,28 @@ const Index = () => {
       </div>
       <div className="d-block d-md-none">
         <img id="banner-sm" className="img-fluid" src={bannersm} alt="banner" />
+      </div>
+      <div className="row m-3 text-center overflow-auto">
+        <div className="d-flex p-0 justify-content-md-center">
+          <button
+            className="btn btn-light m-2"
+            onClick={() => {
+              setGenre("");
+              setSearchMode(false);
+            }}
+          >
+            All
+          </button>
+          {filter.map((item: any) => (
+            <button
+              className="btn btn-light m-2"
+              style={{ textTransform: "capitalize" }}
+              onClick={() => handleFilter(item)}
+            >
+              {item}
+            </button>
+          ))}
+        </div>
       </div>
       <div id="book" className="row">
         {!loading ? (
@@ -192,11 +235,13 @@ const Index = () => {
           <Pagination.Next
             onClick={handleNextPage}
             disabled={
-              !loading_count
-                ? activePage >=
-                  Math.ceil(
-                    data_count.books_aggregate.aggregate.count / limitPage
-                  )
+              !loading_count && !loading
+                ? searchMode
+                  ? activePage >= Math.ceil(data.books.length / limitPage)
+                  : activePage >=
+                    Math.ceil(
+                      data_count.books_aggregate.aggregate.count / limitPage
+                    )
                 : false
             }
           />

@@ -20,8 +20,8 @@ export const USER_REGISTER = gql`
 `
 
 export const GET_BOOKS = gql`
-  query ($limit: Int!, $offset: Int!) {
-    books (limit: $limit, offset: $offset) {
+  query ($limit: Int!, $offset: Int!, $title: String!, $genre: String!) {
+    books (where: {title: {_iregex: $title}, genre: {_iregex: $genre}}, limit: $limit, offset: $offset) {
       id
       title
       author
