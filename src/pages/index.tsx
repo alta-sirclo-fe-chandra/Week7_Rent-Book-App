@@ -82,6 +82,15 @@ const Index = () => {
   const handleFilter = (item: any) => {
     setGenre(item);
     setSearchMode(true);
+    setOffset(0);
+    setActivePage(1);
+  };
+
+  const handleReset = () => {
+    setGenre("");
+    setSearchMode(false);
+    setOffset(0);
+    setActivePage(1);
   };
 
   useEffect(() => {
@@ -133,17 +142,12 @@ const Index = () => {
       </div>
       <div className="row m-3 text-center overflow-auto">
         <div className="d-flex p-0 justify-content-md-center">
-          <button
-            className="btn btn-light m-2"
-            onClick={() => {
-              setGenre("");
-              setSearchMode(false);
-            }}
-          >
+          <button className="btn btn-light m-2" onClick={handleReset}>
             All
           </button>
-          {filter.map((item: any) => (
+          {filter.map((item: any, index) => (
             <button
+              key={index}
               className="btn btn-light m-2"
               style={{ textTransform: "capitalize" }}
               onClick={() => handleFilter(item)}
@@ -226,7 +230,7 @@ const Index = () => {
           {page.map((item: any) => (
             <Pagination.Item
               key={item}
-              active={item === activePage}
+              active={activePage === item}
               onClick={() => handlePage(item)}
             >
               {item}
