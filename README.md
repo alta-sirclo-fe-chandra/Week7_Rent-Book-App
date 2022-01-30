@@ -4,7 +4,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Deployment
 
-[https://rent-book-app-nj2lobw4x-rent-book-app.vercel.app](https://rent-book-app-nj2lobw4x-rent-book-app.vercel.app)
+[https://rent-book-app-nu.vercel.app](https://rent-book-app-nu.vercel.app)
 
 ## Available Scripts
 
